@@ -1,0 +1,12 @@
+{
+  "appointment_type": {
+    "consultation": 0,
+    "follow_up": 1,
+    "check_up": 2,
+    "procedure": 3
+  },
+  "booking_source": {
+    "normal": 0,
+    "ai": 1
+  }
+}

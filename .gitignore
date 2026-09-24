@@ -1,0 +1,19 @@
+backend/venv/
+backend/.env
+backend/.env.*
+!backend/.env.example
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+backend/.pytest_cache/
+frontend/node_modules/
+frontend/.next/
+*.log
+.DS_Store
+
+*.zip
+
+# Virtual environment
+/venv/
