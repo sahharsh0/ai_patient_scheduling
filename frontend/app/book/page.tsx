@@ -9,22 +9,16 @@ export default function BookingPage() {
   const { user, token, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Step 1: Select a doctor
   const [doctors, setDoctors] = useState<any[]>([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
   const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [doctorsError, setDoctorsError] = useState<string | null>(null);
 
-  // Step 2: Select a date
+
   const [selectedDate, setSelectedDate] = useState<string>(''); // YYYY-MM-DD
   const [minDate, setMinDate] = useState<string>(''); // Today's date
   const [maxDate, setMaxDate] = useState<string>(''); // One month from today
 
-  // Step 3: Select a time slot
-  // Each slot carries its own real start/end + duration (doctors can
-  // configure a slot_duration anywhere from 5-120 minutes per availability
-  // window), instead of just an "HH:mm" string — see
-  // backend/app/api/doctor_availability_slots.py::AvailableSlotOut.
   type AvailableSlot = {
     time: string;
     start_datetime: string;
@@ -41,9 +35,7 @@ export default function BookingPage() {
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // Redirect away if the user isn't a logged-in patient. This runs in an
-  // effect (not an early `return` before the hooks above) because React
-  // requires the same hooks to run in the same order on every render.
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.role !== 'patient') {
@@ -51,7 +43,6 @@ export default function BookingPage() {
     }
   }, [authLoading, user, router]);
 
-  // Fetch doctors on mount
   useEffect(() => {
     const fetchDoctors = async () => {
       setDoctorsLoading(true);
@@ -81,7 +72,6 @@ export default function BookingPage() {
     fetchDoctors();
   }, [user, token]);
 
-  // Set min and max dates for the date picker
   useEffect(() => {
     const today = new Date();
     const oneMonthLater = new Date();
@@ -90,11 +80,9 @@ export default function BookingPage() {
     setMinDate(today.toISOString().split('T')[0]);
     setMaxDate(oneMonthLater.toISOString().split('T')[0]);
 
-    // Set the selected date to today by default
     setSelectedDate(today.toISOString().split('T')[0]);
   }, []);
 
-  // Fetch time slots when doctor or date changes
   useEffect(() => {
     if (!selectedDoctorId || !selectedDate) {
       setTimeSlots([]);
@@ -130,17 +118,13 @@ export default function BookingPage() {
     fetchTimeSlots();
   }, [selectedDoctorId, selectedDate, user, token]);
 
-  // Handle booking submission
   const handleBook = async () => {
     if (!selectedDoctorId || !selectedDate || !selectedSlot) {
       setBookingError('Please select a doctor, date, and time slot.');
       return;
     }
 
-    // Use the slot's own real start/end datetimes exactly as the backend
-    // computed them (reflecting the doctor's actual configured slot
-    // duration) instead of reconstructing a Date from the date string and
-    // re-deriving a hardcoded 30-minute end time on the client.
+
     const startDatetimeIso = selectedSlot.start_datetime;
     const endDatetimeIso = selectedSlot.end_datetime;
 

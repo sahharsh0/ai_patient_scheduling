@@ -7,8 +7,6 @@ export default function Header() {
   const { user, isLoading: authLoading, logout } = useAuth();
 
   if (authLoading) {
-    // Avoid flashing "Login/Register" for a split second while the session
-    // is still being restored from localStorage.
     return (
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
