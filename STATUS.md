@@ -1,70 +1,108 @@
 # SmartCare AI — Project Status
 
-This file gives a practical overview of what is currently implemented and what has been tested locally.
+This document provides the current implementation and testing status of SmartCare AI.
 
-The project has been developed as a college/project-level full-stack application. The main appointment booking, AI booking, scheduling, ML, authentication, notification, waitlist, and dashboard features are implemented.
+SmartCare AI is a full-stack AI-powered patient appointment scheduling system developed as a college/project-level application. The system integrates a web frontend, FastAPI backend, MySQL database, NVIDIA AI, machine learning models, and a deterministic appointment scheduling engine.
 
-Some production-level improvements are still possible, but the main application flow has been tested locally with a real MySQL database.
+## Overall Project Status
+
+**Status: Functionally working locally**
+
+The main application workflow is implemented and has been tested locally using a real MySQL database.
+
+### Current implementation status
+
+| Feature                                 | Status  |
+| --------------------------------------- | ------- |
+| Authentication                          | Working |
+| Patient, Doctor, and Admin roles        | Working |
+| MySQL database                          | Working |
+| Database migrations                     | Working |
+| Seed data                               | Working |
+| Doctor availability                     | Working |
+| Doctor leave management                 | Working |
+| Manual appointment booking              | Working |
+| Appointment conflict checking           | Working |
+| AI natural-language appointment parsing | Working |
+| NVIDIA AI integration                   | Working |
+| AI appointment recommendations          | Working |
+| ML predictions                          | Working |
+| Appointment notifications               | Working |
+| Waitlist functionality                  | Working |
+| Admin statistics                        | Working |
+| Frontend/backend integration            | Working |
 
 ---
 
-## Current status
+# System Architecture
 
-**Overall: Functionally working locally**
+SmartCare AI consists of the following major components:
 
-The following parts have been implemented and locally verified:
+```text
+Frontend
+Next.js + React + TypeScript + Tailwind CSS
+                    ↓
+                REST API
+                    ↓
+Backend
+FastAPI + Pydantic + SQLAlchemy
+                    ↓
+              MySQL Database
+                    ↓
+        Scheduling + ML Services
+                    ↑
+              NVIDIA AI
+```
 
-* Authentication
-* Patient, doctor, and admin roles
-* MySQL database
-* Database migrations
-* Seed data
-* Doctor availability
-* Doctor leave management
-* Manual appointment booking
-* Appointment conflict checking
-* AI natural-language appointment parsing
-* NVIDIA AI integration
-* AI appointment recommendations
-* ML predictions
-* Appointment notifications
-* Waitlist functionality
-* Admin statistics
-* Frontend/backend integration
+The AI is used primarily for understanding natural-language appointment requests. Appointment availability, scheduling constraints, database operations, and final booking are handled by the backend.
 
 ---
 
-# Backend
+# Backend Status
 
-## Fixed backend issues
+The backend is implemented using:
 
-Several issues from the earlier version of the project were fixed, including:
+* FastAPI
+* Pydantic
+* SQLAlchemy
+* Alembic
+* JWT authentication
+* Python
 
-* Incorrect imports in the appointment API
-* Schema and ORM model naming conflicts
-* Invalid appointment status values
-* Missing imports in the AI API
-* Incorrect handling of the authenticated user
-* Old Pydantic v1 configuration
-* Scheduling and overlap logic problems
-* Missing appointment duration field
-* Client-supplied patient/doctor IDs where the authenticated user should be used
-
-The backend now starts successfully with:
+The backend starts successfully using:
 
 ```powershell
 uvicorn app.main:app --reload --port 8000
 ```
 
-The health endpoint and Swagger documentation have been tested locally.
+The API health endpoint and Swagger/OpenAPI documentation have been tested locally.
+
+### Backend capabilities
+
+The backend currently provides:
+
+* Authentication
+* Role-based access
+* Patient management
+* Doctor management
+* Appointment management
+* Doctor availability management
+* Doctor leave management
+* AI appointment parsing
+* AI recommendations
+* Machine learning predictions
+* Notifications
+* Waitlist management
+* Admin statistics
+* Rate limiting
 
 ---
 
-# Database
+# Database Status
 
 The project uses MySQL.
 
-Current development database:
+### Development database
 
 ```text
 Host: localhost
@@ -73,17 +111,19 @@ Database: smartcare_ai
 User: smartcare
 ```
 
-Database migrations have been successfully applied using:
+Database migrations are managed using Alembic.
+
+Current database schema has been successfully migrated using:
 
 ```powershell
 alembic upgrade head
 ```
 
-The seed script has also been successfully run.
+### Seeded development data
 
-The seeded database contains:
+The development database contains:
 
-* 8 specializations
+* 8 medical specializations
 * 20 doctors
 * 50 patients
 * Around 300 historical appointments
@@ -92,33 +132,81 @@ The seeded database contains:
 * Doctor availability
 * Doctor leave periods
 
+The database is used by the scheduling, recommendation, notification, and dashboard systems rather than being used only as static demonstration data.
+
 ---
 
-# Scheduling engine
+# Authentication and Authorization
 
-The scheduling system checks actual doctor availability before an appointment is created.
+The application uses JWT-based authentication.
 
-It checks:
+Three user roles are supported:
 
-* Weekly doctor availability
-* Doctor leave
+```text
+Patient
+Doctor
+Admin
+```
+
+Authentication determines the identity of the logged-in user, while authorization determines which operations that user is allowed to perform.
+
+The authenticated user's identity is obtained from the JWT rather than relying on patient or doctor IDs supplied by the frontend.
+
+The frontend also maintains the authenticated session between page refreshes until the JWT expires or the user logs out.
+
+---
+
+# Appointment Scheduling
+
+The appointment scheduling engine uses actual doctor schedules and database information.
+
+Before creating an appointment, the system checks:
+
+* Doctor's weekly availability
+* Doctor leave periods
 * Existing appointments
 * Appointment duration
 * Time overlap
 * Requested date
 * Requested time period
 
-The overlap check uses an actual interval comparison rather than only checking whether two appointments start at the same time.
+The system uses interval-based overlap checking rather than only comparing appointment start times.
 
-The booking process also locks the relevant doctor row while validating and creating the appointment. This helps prevent two simultaneous requests from reserving the same slot.
+The booking process also locks the relevant doctor record while validating and creating an appointment, helping prevent simultaneous requests from reserving the same slot.
 
 ---
 
-# AI booking
+# Manual Booking
 
-The AI system was originally designed around Claude, but the current project uses the **NVIDIA API**.
+Patients can book appointments through the standard booking interface.
 
-Current configuration:
+The manual booking process is:
+
+```text
+Select specialization
+        ↓
+Select doctor
+        ↓
+Select date
+        ↓
+Select available time
+        ↓
+Confirm appointment
+        ↓
+Appointment stored in MySQL
+        ↓
+Notification generated
+```
+
+The appointment is created through the backend scheduling service and stored in the actual database.
+
+---
+
+# AI Booking
+
+The AI booking system uses the **NVIDIA API**.
+
+### Current AI configuration
 
 ```text
 Provider: NVIDIA
@@ -126,19 +214,19 @@ Model: z-ai/glm-5.3-flash
 API base: https://integrate.api.nvidia.com/v1
 ```
 
-The API key is stored locally in `backend/.env` and is not committed to the repository.
+The NVIDIA API key is stored locally in `backend/.env` and is excluded from version control.
 
----
+## AI request processing
 
-## How the AI flow works
+Patients can describe their appointment request using natural language.
 
-A patient can enter a request such as:
+Example:
 
 ```text
 I need a cardiologist tomorrow evening, someone experienced
 ```
 
-The AI extracts information such as:
+The AI extracts structured information such as:
 
 ```text
 Specialization: Cardiology
@@ -147,33 +235,51 @@ Time: Evening
 Experience preference: High
 ```
 
-The AI does not create or guess database IDs.
+The backend then validates and processes this information.
 
-The backend then:
+### AI workflow
 
-1. Resolves the specialization against the database.
-2. Finds matching doctors.
-3. Generates real available appointment slots.
-4. Filters the slots according to the requested date and time.
-5. Uses the ML models to generate predictions.
-6. Scores the available slots.
-7. Shows the patient the recommended appointments.
-8. Lets the patient choose a slot.
-9. Sends the selected appointment through the normal appointment creation service.
+```text
+Patient natural-language request
+              ↓
+        NVIDIA AI parsing
+              ↓
+     Structured appointment data
+              ↓
+ Database specialization matching
+              ↓
+       Doctor availability
+              ↓
+      Scheduling constraints
+              ↓
+        ML predictions
+              ↓
+     Recommendation scoring
+              ↓
+       Available time slots
+              ↓
+       Patient selects slot
+              ↓
+     Normal booking service
+              ↓
+      Appointment created
+```
 
-The AI therefore does not bypass the normal scheduling system.
+The AI does not directly create appointments or select database IDs.
 
 ---
 
-# AI verification
+# AI Verification Status
 
-The following AI request was tested locally:
+The AI appointment workflow has been tested locally.
+
+Test request:
 
 ```text
 I need a cardiologist tomorrow evening, someone experienced
 ```
 
-The parser correctly identified:
+The system identified:
 
 ```text
 Specialization: Cardiology
@@ -182,357 +288,398 @@ Time: Evening
 Experience: High
 ```
 
-The recommendation system returned real available slots for the requested date and evening time period.
+The recommendation system then returned available appointments matching the requested date and evening period.
 
-After one of the recommended slots was booked, that slot was no longer returned as available.
+After a recommended appointment was booked, that slot was no longer returned as available.
 
-This confirms that the AI recommendation flow is connected to the actual scheduling and database logic rather than displaying fixed demo data.
+This demonstrates that the AI recommendation system is connected to the actual scheduling engine and database.
 
 ---
 
-# Machine learning
+# Machine Learning Status
 
-The project currently uses two ML models:
+The project currently contains two trained machine learning models:
 
 ```text
 duration_model.joblib
 noshow_model.joblib
 ```
 
-They are used for:
+### Models
 
-* Appointment duration prediction
-* No-show probability prediction
+**Appointment Duration Model**
 
-The prediction service is located at:
+Predicts the expected duration of an appointment.
+
+**No-show Model**
+
+Predicts the probability of a patient not attending an appointment.
+
+The ML service is located at:
 
 ```text
 backend/app/ml/service.py
 ```
 
-The models are trained using appointment data from the application's database.
+The models use data from the application's appointment database.
 
-The previous categorical encoding approach based on Python's `hash()` function was replaced with fixed categorical mappings so that training and prediction use consistent values.
+Categorical features use fixed mappings so that the same encoding is used during training and prediction.
 
----
-
-## ML dependency
-
-The saved models were originally created with scikit-learn 1.7.2 while the environment had scikit-learn 1.5.2.
-
-This produced model-version warnings.
-
-The environment was updated to:
+### Current ML environment
 
 ```text
-scikit-learn 1.7.2
+scikit-learn: 1.7.2
 ```
 
-The ML predictor was then imported successfully and the recommendation flow was tested again without the previous version-mismatch warnings.
+The ML prediction service has been successfully imported and tested as part of the recommendation workflow.
+
+The ML predictions are used as supporting information for recommendation scoring and are not treated as guaranteed outcomes.
 
 ---
 
-# Recommendation system
+# Recommendation System
 
-The recommendation system is located at:
+The recommendation engine is located at:
 
 ```text
 backend/app/services/recommendation_service.py
 ```
 
-It combines:
+It considers:
 
 * Doctor information
 * Patient history where available
 * Doctor history
 * Appointment timing
-* ML predictions
+* Predicted appointment duration
+* Predicted no-show probability
 * Experience preference
-* Wait preference
+* Waiting-time preference
 * Requested date
 * Requested time
 
-Explicit date and time preferences are treated as filters rather than simply being used as weak scoring preferences.
+Explicit date and time requirements are treated as filters.
 
-For example, if the patient asks for:
+For example:
 
 ```text
 tomorrow evening
 ```
 
-the recommendation system searches the requested date and evening window instead of silently returning appointments from another date.
-
----
-
-# Frontend
-
-The frontend is built with:
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-
-The frontend successfully starts locally using:
-
-```powershell
-npm run dev
-```
-
-or, when PowerShell blocks the npm command:
-
-```powershell
-npm.cmd run dev
-```
-
-The application is available at:
-
-```text
-http://localhost:3000
-```
-
----
-
-# Frontend fixes
-
-The following frontend issues were fixed:
-
-* Broken JSX
-* Unterminated strings
-* Missing `use client`
-* Rules-of-Hooks violation
-* Authentication redirect race condition
-* Client-side patient/doctor ID handling
-* Registration field-name mismatch
-* Duplicate `Dr.` displayed before doctor names
-* AI booking input text visibility
-* Incorrect admin booking link
-* TypeScript callback typing issues
-
-The authentication context now waits for the saved session to be restored before protected pages decide whether the user needs to be redirected.
-
----
-
-# Appointment booking verification
-
-A complete AI booking was tested locally.
-
-The tested flow was:
-
-```text
-Login
-  ↓
-Patient dashboard
-  ↓
-AI booking
-  ↓
-Natural-language request
-  ↓
-AI parsing
-  ↓
-Doctor/slot recommendations
-  ↓
-Select appointment
-  ↓
-Create appointment
-  ↓
-Notification generated
-  ↓
-Appointment visible on patient dashboard
-```
-
-The appointment was created in the real MySQL database and appeared in the patient's dashboard.
-
-A notification confirming the appointment was also generated.
+causes the system to search the requested date and evening period rather than returning an appointment from another date.
 
 ---
 
 # Notifications
 
-The application includes in-app notifications.
+The system provides in-app notifications.
 
-Notifications are connected to appointment actions such as:
+Notifications are generated for appointment-related events including:
 
 * Booking
 * Cancellation
 * Rescheduling
 * Waitlist matching
 
-The notification endpoint is:
+Notification endpoint:
 
 ```text
 GET /api/notifications
 ```
 
+Notifications are currently stored and displayed inside the application.
+
 ---
 
 # Waitlist
 
-The waitlist feature has real backend endpoints and database integration.
+The application includes a database-backed waitlist system.
 
-The system can:
+The waitlist can:
 
 * Add patients to the waitlist
 * Retrieve waitlist information
-* Check the waitlist when an appointment is cancelled
-* Notify a matching patient
+* Detect matching availability after cancellation
+* Notify matching patients
+
+The waitlist functionality is implemented through backend APIs and database records.
 
 ---
 
-# Doctor schedule management
+# Doctor Schedule Management
 
-Doctors can manage their availability and leave periods through the frontend.
-
-The schedule page is:
+Doctors can manage their schedules through:
 
 ```text
 /doctor/schedule
 ```
 
-The system also checks whether a new leave period conflicts with existing scheduled appointments and reports those conflicts to the doctor.
+The scheduling system supports:
+
+* Weekly availability
+* Leave periods
+* Schedule updates
+* Leave conflict checking
+
+The system checks whether a new leave period conflicts with existing scheduled appointments.
 
 ---
 
-# Admin dashboard
+# Admin Dashboard
 
-The admin dashboard includes statistics calculated from the real database.
+The admin dashboard provides statistics calculated from the actual database.
 
-The backend endpoint is:
+Backend endpoint:
 
 ```text
 GET /api/admin/stats
 ```
 
-The statistics are not hard-coded.
+The dashboard currently includes database-driven statistics rather than hard-coded values.
+
+The current admin account is configured as:
+
+```text
+Name: Harsh
+Email: admin@example.com
+Role: Admin
+```
 
 ---
 
-# Authentication and security
+# Frontend Status
 
-The application uses JWT authentication.
+The frontend is built using:
 
-Authenticated identity is taken from the logged-in user rather than trusting patient or doctor IDs supplied by the frontend.
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+
+The development server runs using:
+
+```powershell
+npm run dev
+```
+
+or:
+
+```powershell
+npm.cmd run dev
+```
+
+The application is available locally at:
+
+```text
+http://localhost:3000
+```
+
+### Current frontend functionality
+
+The frontend provides interfaces for:
+
+* Login
+* Registration
+* Patient dashboard
+* Doctor dashboard
+* Admin dashboard
+* Manual appointment booking
+* AI appointment booking
+* Appointment management
+* Doctor schedule management
+* Notifications
+* Waitlist functionality
+
+Frontend and backend communication is implemented through REST APIs.
+
+---
+
+# End-to-End Application Flow
+
+The main patient workflow has been tested locally:
+
+```text
+Login
+  ↓
+Patient Dashboard
+  ↓
+AI Booking
+  ↓
+Natural-Language Request
+  ↓
+NVIDIA AI Parsing
+  ↓
+Database Validation
+  ↓
+Doctor Availability
+  ↓
+ML Recommendation
+  ↓
+Select Appointment
+  ↓
+Create Appointment
+  ↓
+MySQL Database
+  ↓
+Notification
+  ↓
+Appointment Displayed
+```
+
+The appointment was created in the real MySQL database and subsequently appeared in the patient's dashboard.
+
+---
+
+# Security Status
+
+The application uses:
+
+* JWT authentication
+* Password hashing
+* Role-based authorization
+* Environment-based secrets
+* Authenticated-user identity
+* Backend validation
+* Rate limiting
 
 Production safety checks are also included.
 
-When production mode is enabled, the backend refuses to start if:
+When production mode is enabled, the backend checks that:
 
-* The default JWT secret is still being used
-* Debug mode is enabled
-* Localhost is still allowed by the production CORS configuration
-
----
-
-# Rate limiting
-
-The backend includes request rate limiting.
-
-The current implementation stores rate-limit information in memory.
-
-This is suitable for the current single-process development setup, but it would need a shared store such as Redis for a multi-instance production deployment.
-
-The previous issue where rate-limit failures returned HTTP 500 instead of HTTP 429 has been fixed.
+* The default JWT secret is not being used.
+* Debug mode is disabled.
+* Localhost is not present in the production CORS configuration.
 
 ---
 
-# Testing completed
+# Rate Limiting
+
+The backend includes API rate limiting.
+
+The current rate limiter stores its state in memory.
+
+This is appropriate for the current single-process development environment.
+
+For a multi-instance production deployment, a shared store such as Redis would be required.
+
+Rate-limit failures return HTTP `429 Too Many Requests`.
+
+---
+
+# Testing Status
+
+## Backend testing
 
 The following have been tested locally:
-
-### Backend
 
 * Backend startup
 * API health check
 * Swagger/OpenAPI
-* Database connection
+* MySQL database connection
 * Alembic migrations
-* Seed script
+* Seed data
 * Authentication
+* Role-based access
 * AI parsing
+* NVIDIA AI integration
 * AI recommendations
 * Appointment creation
 * Appointment conflict handling
 * Notifications
 * ML prediction
 
-### Frontend
+## Frontend testing
+
+The following have been tested locally:
 
 * Development server startup
 * Login
+* Registration
 * Patient dashboard
-* AI booking page
+* AI booking
 * AI recommendation display
 * Appointment selection
+* Appointment booking
 * Booking confirmation
 * Patient appointment display
 
 ---
 
-# Known limitations
+# Current Limitations
 
-These are not currently blocking the main application flow.
+The core application is functional locally, but several areas can still be improved.
+
+### Production deployment
+
+A complete production deployment has not yet been the primary development environment and should be tested separately.
 
 ### Rate limiting
 
-The rate limiter is in-memory, so it is not suitable for a multi-server deployment without a shared store.
+The current rate limiter uses in-memory storage and is therefore intended for a single-process environment.
 
-### No email/SMS
+### Notifications
 
 Notifications are currently in-app only.
 
-### Frontend automated tests
+There is currently no email or SMS notification service.
 
-There are no full Jest/Playwright frontend test suites yet.
+### Automated frontend testing
+
+There are currently no complete Jest or Playwright frontend test suites.
 
 ### Admin analytics
 
-The admin dashboard currently provides statistics but does not include advanced charts or long-term trend analysis.
+The admin dashboard provides database-driven statistics but does not currently include advanced charts or long-term trend analysis.
 
 ### Pagination
 
-Some API endpoints use fixed limits instead of full pagination.
+Some API endpoints currently use fixed result limits rather than complete pagination.
 
-### No-show model
+### ML evaluation
 
-The usefulness of the no-show model depends on the amount and distribution of historical appointment data in the seeded database. A freshly seeded development database should be checked before treating the model's evaluation metrics as meaningful.
+The no-show model's usefulness depends on the amount and distribution of historical appointment data available in the development database. More representative real-world data would be required for meaningful production evaluation.
+
+### AI dependency
+
+AI appointment parsing depends on access to the NVIDIA API and a valid API key.
 
 ---
 
-# Deployment
+# Deployment Status
 
 Docker configuration is included in the repository.
 
-The backend Docker entrypoint runs:
+The backend container runs database migrations before starting the FastAPI server:
 
 ```text
 alembic upgrade head
 ```
 
-before starting the FastAPI server.
-
 The ML model files are included in the backend image.
 
-A complete production Docker deployment has not been the main development environment, so production deployment should still be tested separately before being relied upon.
+The application is currently considered **locally functional**, while production deployment requires additional testing and configuration.
 
 ---
 
-# Important security note
+# Security and Environment Files
 
-Never commit the following files containing real credentials:
+Private configuration files are excluded from version control.
+
+The following files should never contain committed credentials:
 
 ```text
 backend/.env
 frontend/.env.local
 ```
 
-These files can contain:
+These files may contain:
 
 * NVIDIA API keys
 * Database passwords
 * JWT secrets
-* Other private configuration
+* Private configuration
 
-Only the example configuration files should be committed:
+Only example configuration files should be committed:
 
 ```text
 backend/.env.example
@@ -541,9 +688,9 @@ frontend/.env.example
 
 ---
 
-# Demo accounts
+# Demo Accounts
 
-The development seed provides:
+The development seed provides the following accounts:
 
 | Role    | Email                                             | Password        |
 | ------- | ------------------------------------------------- | --------------- |
@@ -551,34 +698,71 @@ The development seed provides:
 | Doctor  | [doctor@example.com](mailto:doctor@example.com)   | DevPassword123! |
 | Patient | [patient@example.com](mailto:patient@example.com) | DevPassword123! |
 
-These accounts are for development/demo use only.
+These accounts are intended for development and demonstration purposes only.
 
 ---
 
-# Conclusion
+# Final Project Status
 
-SmartCare AI currently has a working local full-stack implementation covering the main planned features.
+**SmartCare AI is currently a functionally working local full-stack application.**
 
-The most important end-to-end flow has been verified:
+The major planned components are implemented:
 
 ```text
-Natural-language request
-        ↓
-NVIDIA AI parsing
-        ↓
-Database grounding
-        ↓
-Real doctor availability
-        ↓
-ML-based recommendation
-        ↓
-Patient selects slot
-        ↓
-Normal scheduling engine
-        ↓
-Database appointment
-        ↓
-Notification
+Frontend
+    ✓
+Backend
+    ✓
+MySQL Database
+    ✓
+Authentication
+    ✓
+Role-based Access
+    ✓
+Manual Booking
+    ✓
+AI Booking
+    ✓
+NVIDIA AI Integration
+    ✓
+Scheduling Engine
+    ✓
+Machine Learning
+    ✓
+Recommendations
+    ✓
+Notifications
+    ✓
+Waitlist
+    ✓
+Admin Dashboard
+    ✓
+Docker Configuration
+    ✓
 ```
 
-The remaining work is mainly around production hardening, scaling, automated frontend testing, and additional UI improvements rather than replacing the core application architecture.
+The core end-to-end workflow is operational:
+
+```text
+Natural-Language Appointment Request
+                ↓
+          NVIDIA AI Parsing
+                ↓
+        Database Grounding
+                ↓
+      Doctor Availability
+                ↓
+        ML Predictions
+                ↓
+     Appointment Recommendation
+                ↓
+        Patient Selection
+                ↓
+      Scheduling Validation
+                ↓
+       MySQL Appointment
+                ↓
+          Notification
+```
+
+The current remaining work is primarily related to production deployment, scaling, automated testing, advanced analytics, external notification services, and improving the ML models with larger and more representative datasets.

@@ -59,10 +59,6 @@ class Settings(BaseSettings):
 
     # --- AI provider ---
     AI_PROVIDER: str = "nvidia"
-
-    # Anthropic (kept for backwards compatibility)
-    ANTHROPIC_API_KEY: str = ""
-
     # NVIDIA NIM / OpenAI-compatible API
     NVIDIA_API_KEY: str = ""
     NVIDIA_BASE_URL: str = "https://integrate.api.nvidia.com/v1"

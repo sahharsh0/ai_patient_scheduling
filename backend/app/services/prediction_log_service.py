@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Keys we never want to persist even if a caller accidentally includes them
 # in input_features (defense in depth against logging secrets).
-_SENSITIVE_KEYS = {"api_key", "anthropic_api_key", "password", "password_hash", "token", "authorization"}
-
+_SENSITIVE_KEYS = {"api_key", "password", "password_hash", "token", "authorization"}
 
 def _sanitize(d: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     if not d:

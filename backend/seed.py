@@ -94,7 +94,7 @@ INDIAN_PATIENT_NAMES = [
     "Geetika Anand", "Rajat Suri", "Meenal Karnik", "Zubin Contractor", "Shalini Reddy",
 ]
 
-DEV_PASSWORD = "DevPassword123!"  # NEVER use in production — change immediately.
+DEV_PASSWORD = "DevPassword123!"  
 
 
 def hash_pw(pw: str) -> str:
@@ -123,8 +123,7 @@ def seed():
         db.flush()
         print(f"Created {len(specializations)} specializations")
 
-        # --- Demo accounts (fixed, predictable) ---
-        admin_user = User(name="Rajesh Iyer", email="admin@example.com", password_hash=hash_pw(DEV_PASSWORD), role=UserRole.admin)
+        admin_user = User(name="Harsh", email="admin@example.com", password_hash=hash_pw(DEV_PASSWORD), role=UserRole.admin)
         db.add(admin_user)
 
         demo_doctor_user = User(
